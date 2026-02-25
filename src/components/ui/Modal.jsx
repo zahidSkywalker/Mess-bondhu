@@ -12,7 +12,14 @@ const Modal = ({ isOpen, onClose, title, children }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-6">
+        {/* 
+           FIXED: 
+           1. Changed 'items-end' to 'items-center' and 'justify-center' 
+              -> This ensures the modal is always perfectly centered and never cut off by top/bottom bars.
+           2. Added 'p-4' for mobile padding so content doesn't touch edges.
+        */}
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6">
+          
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -24,30 +31,42 @@ const Modal = ({ isOpen, onClose, title, children }) => {
           
           {/* Modal Content */}
           <motion.div
-            initial={{ y: '100%', opacity: 0, scale: 1 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: '20%', opacity: 0, scale: 0.95 }}
+            // Animation: Slight scale and fade from center
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ 
               type: 'spring', 
               damping: 25, 
-              stiffness: 300,
-              opacity: { duration: 0.2 }
+              stiffness: 300 
             }}
-            className="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-[2.5rem] sm:rounded-[2rem] shadow-2xl p-8 max-h-[90vh] overflow-y-auto border-t sm:border border-slate-200 dark:border-slate-700"
+            className="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh]"
           >
-            <button 
-              onClick={onClose}
-              className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-            >
-              <X size={24} strokeWidth={2} />
-            </button>
-
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">{title}</h2>
-              <div className="h-1 w-12 bg-tropical-teal rounded-full mt-2"></div>
+            {/* Modal Header (Fixed Top) */}
+            <div className="flex justify-between items-start p-6 pb-2 flex-shrink-0">
+              <div className="pr-8">
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight leading-tight">
+                  {title}
+                </h2>
+                <div className="h-1.5 w-10 bg-tropical-teal rounded-full mt-3"></div>
+              </div>
+              
+              <button 
+                onClick={onClose}
+                className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex-shrink-0"
+              >
+                <X size={24} strokeWidth={2} />
+              </button>
             </div>
-            
-            <div className="space-y-6">
+
+            {/* Modal Body (Scrollable) */}
+            {/* 
+               FIXED: 
+               Added 'overflow-y-auto' and 'no-scrollbar' class.
+               This ensures that if content is tall, only this part scrolls, 
+               keeping the modal aligned perfectly in the center.
+            */}
+            <div className="p-6 pt-4 overflow-y-auto no-scrollbar space-y-6">
               {children}
             </div>
           </motion.div>
