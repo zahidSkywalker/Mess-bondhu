@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from '../../utils/cn'; // Utility helper to merge classes
+import { cn } from '../../utils/cn';
 
 const Input = ({ 
   label, 
@@ -10,31 +10,36 @@ const Input = ({
   ...props 
 }) => {
   return (
-    <div className="flex flex-col gap-1.5 mb-4 w-full">
+    <div className="flex flex-col gap-2 mb-6 w-full">
       {label && (
-        <label className="text-sm font-medium text-slate-600 dark:text-slate-300 ml-1">
+        <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1 tracking-wide">
           {label}
         </label>
       )}
       <div className="relative group">
         {Icon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-tropical-teal transition-colors">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-baltic-blue transition-colors duration-300">
             <Icon size={20} />
           </div>
         )}
         <input
           type={type}
           className={cn(
-            "w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-tropical-teal/50 focus:border-tropical-teal transition-all placeholder:text-gray-400 text-slate-800 dark:text-slate-100",
-            Icon && "pl-10",
-            error && "border-red-500 focus:ring-red-500/20 focus:border-red-500",
+            "w-full bg-gray-50 dark:bg-slate-800 border-2 border-gray-100 dark:border-slate-700 rounded-2xl px-5 py-4 outline-none text-lg transition-all duration-300 placeholder:text-slate-400 text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-baltic-blue focus:shadow-lg focus:shadow-baltic-blue/5",
+            Icon && "pl-12",
+            error && "border-red-400 focus:border-red-500 focus:shadow-red-500/10",
             className
           )}
           {...props}
         />
       </div>
       {error && (
-        <span className="text-xs text-red-500 ml-1 font-medium">{error}</span>
+        <motion.p 
+          initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
+          className="text-xs text-red-500 ml-1 font-bold mt-1"
+        >
+          {error}
+        </motion.p>
       )}
     </div>
   );
