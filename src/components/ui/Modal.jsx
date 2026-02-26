@@ -12,7 +12,6 @@ const Modal = ({ isOpen, onClose, title, children }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        // WRAPPED IN REACT FRAGMENT <> TO FIX SYNTAX ERROR
         <>
           {/* Backdrop */}
           <motion.div
@@ -23,7 +22,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
             className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm"
           />
           
-          {/* Modal Content - Centered vertically & horizontally */}
+          {/* Modal Container - Fixed positioning with scroll support */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -33,9 +32,10 @@ const Modal = ({ isOpen, onClose, title, children }) => {
               damping: 25, 
               stiffness: 300 
             }}
-            className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6 pointer-events-none"
+            className="fixed inset-0 z-[70] flex items-center justify-center p-4 overflow-y-auto"
           >
-            <div className="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] pointer-events-auto">
+            {/* Inner Modal Card - Responsive Width and Max Height */}
+            <div className="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col my-8 max-h-[90vh]">
               
               {/* Modal Header (Fixed Top) */}
               <div className="flex justify-between items-start p-6 pb-2 flex-shrink-0">
