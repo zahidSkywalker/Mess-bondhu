@@ -18,6 +18,8 @@
     /* Subtle Grid Background Pattern */
     background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
     background-size: 24px 24px;
+    /* Enable safe-area support for mobile devices */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
   .dark body {
@@ -79,5 +81,13 @@
     opacity: 0;
     transform: scale(0.95);
     transition: opacity 200ms ease-in, transform 200ms ease-in;
+  }
+
+  /* Safe Area Utilities for Professional Alignment */
+  .pt-safe {
+    padding-top: max(env(safe-area-inset-top), 1.5rem);
+  }
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 1.5rem);
   }
 }
