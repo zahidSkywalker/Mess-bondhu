@@ -15,9 +15,9 @@ const BottomNav = ({ activePage, setActivePage }) => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 w-full z-40 pb-safe">
+    <nav className="fixed bottom-0 left-0 w-full z-40">
       {/* Container to match app width on desktop */}
-      <div className="max-w-md mx-auto bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-6 py-3 pb-6 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] rounded-t-3xl">
+      <div className="max-w-md mx-auto bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-6 py-3 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.05)] rounded-t-3xl">
         <div className="flex justify-between items-center">
           {navItems.map((item) => {
             const Icon = item.icon;
