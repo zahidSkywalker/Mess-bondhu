@@ -74,7 +74,8 @@ const AppContent = () => {
       <div className="w-full max-w-md bg-white dark:bg-slate-900 min-h-screen relative shadow-2xl sm:border-x sm:border-slate-200 dark:sm:border-slate-800">
         
         {/* Animated Page Wrapper */}
-        <main className="pb-24 pt-8 px-6 min-h-screen relative">
+        {/* Added pt-safe for top alignment on notched devices */}
+        <main className="pb-28 pt-8 pt-safe px-6 min-h-screen relative">
           <AnimatePresence mode='wait'>
             <motion.div
               key={currentPage}
