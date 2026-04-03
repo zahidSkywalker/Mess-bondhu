@@ -1,0 +1,43 @@
+{
+  "name": "Mess Bondhu Pro",
+  "short_name": "Mess Bondhu",
+  "description": "Bangladesh Mess Management System - Offline First PWA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#22577a",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "bn",
+  "dir": "ltr",
+  "categories": ["finance", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Add Meal",
+      "short_name": "Meal",
+      "url": "/meals",
+      "icons": [{ "src": "/icons/icon-192x192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Add Expense",
+      "short_name": "Expense",
+      "url": "/expenses",
+      "icons": [{ "src": "/icons/icon-192x192.svg", "sizes": "192x192" }]
+    }
+  ]
+}
