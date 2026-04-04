@@ -5,7 +5,7 @@ import { useToastContext } from '../context/ToastContext';
 import { useLanguageContext } from '../context/LanguageContext';
 import { getDatesInMonth, toDateStr } from '../utils/formatters';
 
-export default function useMeals(messId) {
+const useMeals = (messId) => {
   const [meals, setMeals] = useState([]);
   const [loading, setLoading] = useState(false);
   const { success, error: showError } = useToastContext();
