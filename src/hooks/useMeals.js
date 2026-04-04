@@ -211,3 +211,5 @@ export default function useMeals(messId) {
     getMealsByDateMap,
   };
 }
+export { useMeals };
+export default useMeals;
