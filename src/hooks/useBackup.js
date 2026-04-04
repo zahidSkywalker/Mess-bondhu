@@ -13,7 +13,7 @@ import { useMessContext } from '../context/MessContext';
  * After successful restore, automatically refreshes the mess list
  * so the UI reflects the new data immediately.
  */
-export default function useBackup() {
+const useBackup = () => {
   const [exporting, setExporting] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const { success, error: showError, warning } = useToastContext();
