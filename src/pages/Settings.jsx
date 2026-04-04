@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useMess } from '../hooks/useMess';
 import useInstallPrompt from '../hooks/useInstallPrompt';
-import { useLanguageContext } from '../../context/LanguageContext';
+import { useLanguageContext } from '../context/LanguageContext';
 import ThemeToggle from '../components/settings/ThemeToggle';
 import LanguageToggle from '../components/settings/LanguageToggle';
 import BackupRestore from '../components/settings/BackupRestore';
@@ -10,7 +10,7 @@ import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
-import { validatePercentage, validate } from '../../utils/validators';
+import { validatePercentage, validate } from '../utils/validators';
 
 const DownloadIcon = (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
