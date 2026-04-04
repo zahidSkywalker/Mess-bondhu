@@ -9,7 +9,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
  *
  * Also tracks `isInstalled` by listening for the `appinstalled` event.
  */
-export default function useInstallPrompt() {
+const useInstallPrompt = () => {
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const deferredPromptRef = useRef(null);
