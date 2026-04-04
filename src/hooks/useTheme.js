@@ -1,6 +1,6 @@
 import { useThemeContext } from '../context/ThemeContext';
 
-export function useTheme() {
+const useTheme = () => {
   const ctx = useThemeContext();
   return ctx;
 }
