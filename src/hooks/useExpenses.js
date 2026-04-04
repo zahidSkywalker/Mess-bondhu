@@ -160,3 +160,5 @@ export default function useExpenses(messId) {
     getCategoryBreakdown,
   };
 }
+export { useExpenses };
+export default useExpenses;
