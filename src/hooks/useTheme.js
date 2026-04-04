@@ -5,4 +5,5 @@ export function useTheme() {
   return ctx;
 }
 
+export { useTheme };
 export default useTheme;
