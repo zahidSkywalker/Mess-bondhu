@@ -183,3 +183,5 @@ export default function usePayments(messId) {
     getPaymentsByMember,
   };
 }
+export { usePayments };
+export default usePayments;
