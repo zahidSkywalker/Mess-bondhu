@@ -5,4 +5,5 @@ export function useMess() {
   return ctx;
 }
 
+export { useMess };
 export default useMess;
