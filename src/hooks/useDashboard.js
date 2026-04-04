@@ -3,7 +3,7 @@ import { calculateMonthlySummary, calculateProfitLoss } from '../utils/calculati
 import { getMonthKey } from '../utils/formatters';
 import { useToastContext } from '../context/ToastContext';
 
-export default function useDashboard(messId) {
+const useDashboard = (messId) => {
   const [summary, setSummary] = useState(null);
   const [profitLoss, setProfitLoss] = useState(null);
   const [loading, setLoading] = useState(false);
