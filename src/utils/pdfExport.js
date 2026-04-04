@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { calculateMonthlySummary, getExpenseBreakdown, getDailyMealSummary } from './calculations';
 import db from '../db';
 import { formatCurrency, formatMonthKey, getDaysInMonth, toBengaliNum, DAYS_SHORT_BN, DAYS_SHORT_EN, MONTHS_BN, MONTHS_EN } from './formatters';
