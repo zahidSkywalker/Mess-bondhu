@@ -146,3 +146,5 @@ export default function useSettings() {
     defaultMealCount,
   };
 }
+export { useSettings };
+export default useSettings;
