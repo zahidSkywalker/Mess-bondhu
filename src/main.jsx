@@ -4,7 +4,8 @@ import { BrowserRouter } from 'react-router-dom';
 import { MessProvider } from './context/MessContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
-import ToastProvider from './components/ui/ToastProvider';
+import { ToastProvider } from './context/ToastContext';
+import ToastUI from './components/ui/ToastProvider';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 import App from './App';
 import './index.css';
@@ -18,6 +19,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <LanguageProvider>
               <ToastProvider>
                 <App />
+                <ToastUI />
               </ToastProvider>
             </LanguageProvider>
           </ThemeProvider>
