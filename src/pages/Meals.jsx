@@ -38,12 +38,10 @@ export default function Meals() {
   const { t, isBn } = useLanguageContext();
   const { defaultMealCount } = useSettings();
 
-  // ---- Month navigation state ----
   const [currentDate, setCurrentDate] = useState(new Date());
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
 
-  // ---- Hooks ----
   const {
     meals,
     loading: mealsLoading,
@@ -59,26 +57,22 @@ export default function Meals() {
 
   const [activeMembers, setActiveMembers] = useState([]);
 
-  // ---- Load active members ----
   useEffect(() => {
     if (activeMessId) {
       getActiveMembers().then(setActiveMembers);
     }
   }, [activeMessId, getActiveMembers]);
 
-  // ---- Fetch meals when month changes ----
   useEffect(() => {
     if (activeMessId) {
       fetchMeals(year, month);
     }
   }, [activeMessId, year, month, fetchMeals]);
 
-  // ---- Also refresh meals after active members load (for bulk add) ----
   const refreshMeals = useCallback(() => {
     fetchMeals(year, month);
   }, [year, month, fetchMeals]);
 
-  // ---- Month navigation ----
   const goToPrevMonth = useCallback(() => {
     setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   }, []);
@@ -97,21 +91,16 @@ export default function Meals() {
   const monthKey = getMonthKey(currentDate);
   const monthLabel = formatMonthKey(monthKey, isBn ? 'bn' : 'en');
 
-  // ---- View mode ----
   const [viewMode, setViewMode] = useState('table');
   const [addOpen, setAddOpen] = useState(false);
 
-  // ---- Meals by date map ----
   const mealsByDate = useMemo(() => getMealsByDateMap(), [meals, getMealsByDateMap]);
 
-  // ---- Meal rate display (bazar / total meals) ----
   const totalBazar = meals.reduce((sum, m) => {
-    // We don't have category info in meals, use 0 as placeholder
     return sum;
   }, 0);
   const mealRate = totalMealCount > 0 ? '—' : '—';
 
-  // ---- View tabs ----
   const viewTabs = [
     { key: 'table', label: t('meals.table') },
     { key: 'calendar', label: t('meals.calendar') },
@@ -119,7 +108,6 @@ export default function Meals() {
 
   return (
     <div className="page-container">
-      {/* Header with month nav */}
       <div className="page-header">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
@@ -153,7 +141,6 @@ export default function Meals() {
         </div>
       </div>
 
-      {/* Stats row */}
       <div className="grid grid-cols-2 gap-3 mb-4">
         <Card hover={false} className="text-center py-3">
           <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide">{t('meals.totalMealsToday')}</p>
@@ -169,7 +156,6 @@ export default function Meals() {
         </Card>
       </div>
 
-      {/* View mode tabs + Add button */}
       <div className="flex items-center justify-between mb-4">
         <Tabs
           tabs={viewTabs}
@@ -179,7 +165,6 @@ export default function Meals() {
         />
       </div>
 
-      {/* Content */}
       <div className="fade-in" key={viewMode}>
         {viewMode === 'table' ? (
           <MealTable
@@ -200,21 +185,18 @@ export default function Meals() {
         )}
       </div>
 
-      {/* Floating add button (mobile-friendly) */}
-      <div className="fixed bottom-20 right-4 md:bottom-8 md:right-8 z-20">
-        <button
-          onClick={() => setAddOpen(true)}
-          className="w-14 h-14 rounded-2xl bg-baltic text-white shadow-lg hover:bg-baltic-600 active:scale-95 transition-all flex items-center justify-center"
-          aria-label={t('meals.addMeal')}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => setAddOpen(true)}
+        className="fixed bottom-20 right-4 md:bottom-8 md:right-8 z-20 w-14 h-14 rounded-2xl bg-baltic text-white shadow-lg hover:bg-baltic-600 hover:shadow-xl active:scale-95 transition-colors duration-200 flex items-center justify-center"
+        aria-label={t('meals.addMeal')}
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+      </button>
 
-      {/* Add meal modal */}
       <Modal
         isOpen={addOpen}
         onClose={() => setAddOpen(false)}
