@@ -10,7 +10,6 @@ import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
-// Validators used inline — no import needed
 
 const DownloadIcon = (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -34,14 +33,13 @@ export default function Settings() {
 
   const [serviceCharge, setServiceCharge] = useState('0');
   const [customRate, setCustomRate] = useState('0');
+  const [mealRateMode, setMealRateMode] = useState('standard');
   const [scError, setScError] = useState('');
   const [crError, setCrError] = useState('');
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
 
-  // ---- We need useSettings for reading/writing ----
-  // Import dynamically to avoid circular dependency
   const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   const loadSettings = useCallback(async () => {
@@ -52,13 +50,13 @@ export default function Settings() {
       for (const row of rows) map[row.key] = row.value;
       setServiceCharge(String(map.serviceChargePercent || 0));
       setCustomRate(String(map.customMealRate || 0));
+      setMealRateMode(map.mealRateMode || 'standard');
       setSettingsLoaded(true);
     } catch (err) {
       console.error('Failed to load settings:', err);
     }
   }, []);
 
-  // Load on mount
   useState(() => {
     loadSettings();
   });
@@ -73,12 +71,11 @@ export default function Settings() {
         await db.settings.add({ key, value });
       }
     } catch (err) {
-      console.error(`Failed to save ${key}:`, err);
+      console.error('Failed to save ' + key + ':', err);
     }
   }, []);
 
-  // ---- Handle service charge save ----
-    const handleSaveSC = useCallback(() => {
+  const handleSaveSC = useCallback(() => {
     const value = Number(serviceCharge);
     if (isNaN(value) || value < 0 || value > 100) {
       setScError(isBn ? '০ থেকে ১০০ এর মধ্যে হতে হবে।' : 'Must be between 0 and 100.');
@@ -88,18 +85,21 @@ export default function Settings() {
     saveSetting('serviceChargePercent', value);
   }, [serviceCharge, isBn, saveSetting]);
 
-  // ---- Handle custom rate save ----
-    const handleSaveCR = useCallback(() => {
+  const handleSaveCR = useCallback(() => {
     const value = Number(customRate);
-    if (isNaN(value) || value < 0 || value > 100) {
-      setCrError(isBn ? '০ থেকে ১০০ এর মধ্যে হতে হবে।' : 'Must be between 0 and 100.');
+    if (isNaN(value) || value < 0) {
+      setCrError(isBn ? '০ বা তার বেশি হতে হবে।' : 'Must be 0 or greater.');
       return;
     }
     setCrError('');
     saveSetting('customMealRate', value);
-  }, [customRate, saveSetting]);
+  }, [customRate, isBn, saveSetting]);
 
-  // ---- Handle delete mess ----
+  const handleSaveMealRateMode = useCallback((mode) => {
+    setMealRateMode(mode);
+    saveSetting('mealRateMode', mode);
+  }, [saveSetting]);
+
   const handleDeleteConfirm = useCallback(async () => {
     if (!activeMess || deleteConfirmText !== activeMess.name) return;
     setDeleting(true);
@@ -109,16 +109,16 @@ export default function Settings() {
     setDeleteConfirmText('');
   }, [activeMess, deleteConfirmText, deleteMess]);
 
+  const isCustomMode = mealRateMode === 'custom';
+
   return (
     <div className="page-container">
-      {/* Header */}
       <div className="page-header">
         <h1 className="page-title">{t('settings.title')}</h1>
         <p className="page-subtitle">{t('settings.subtitle')}</p>
       </div>
 
       <div className="space-y-6 max-w-2xl">
-        {/* ---- Install App ---- */}
         {isInstallable && (
           <Card hover={false} className="bg-gradient-to-r from-baltic/5 to-teal/5 dark:from-baltic/10 dark:to-teal/10">
             <div className="flex items-start gap-3">
@@ -146,14 +146,12 @@ export default function Settings() {
           </Card>
         )}
 
-        {/* ---- Appearance ---- */}
         <div className="space-y-3">
           <h2 className="section-title">{t('settings.appearance')}</h2>
           <ThemeToggle />
           <LanguageToggle />
         </div>
 
-        {/* ---- Mess Settings ---- */}
         <div className="space-y-3">
           <h2 className="section-title">{t('settings.messSettings')}</h2>
 
@@ -188,15 +186,55 @@ export default function Settings() {
             </div>
           </Card>
 
-          {/* Custom Meal Rate */}
+          {/* Meal Rate Mode */}
           <Card hover={false}>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                {t('settings.mealRateMode')}
+              </h3>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                {t('settings.mealRateModeDesc')}
+              </p>
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-700 rounded-xl p-1 mt-3">
+                <button
+                  onClick={() => handleSaveMealRateMode('standard')}
+                  className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    !isCustomMode
+                      ? 'bg-white dark:bg-slate-600 text-baltic dark:text-teal shadow-sm'
+                      : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                  }`}
+                >
+                  {t('settings.standardRate')}
+                </button>
+                <button
+                  onClick={() => handleSaveMealRateMode('custom')}
+                  className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isCustomMode
+                      ? 'bg-white dark:bg-slate-600 text-baltic dark:text-teal shadow-sm'
+                      : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                  }`}
+                >
+                  {t('settings.customRate')}
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2">
+                {isCustomMode
+                  ? (isBn ? 'খাবারের খরচ = প্রতিটি খাবার × ফিক্সড রেট (নিচে সেট করুন)' : 'Meal cost = each meal × fixed rate (set below)')
+                  : (isBn ? 'খাবারের খরচ = বাজার খরচ ÷ মোট খাবার' : 'Meal cost = bazar cost ÷ total meals')
+                }
+              </p>
+            </div>
+          </Card>
+
+          {/* Custom Meal Rate */}
+          <Card hover={false} className={isCustomMode ? '' : 'opacity-50'}>
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                   {t('settings.customRateValue')}
                 </h3>
                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                  {t('settings.customRatePlaceholder')}
+                  {isBn ? 'প্রতি খাবারের ফিক্সড রেট লিখুন (যেমন: ৬০)' : 'Enter fixed rate per meal (e.g., 60)'}
                 </p>
                 <div className="flex items-center gap-2 mt-3">
                   <Input
@@ -209,8 +247,9 @@ export default function Settings() {
                     prefix="৳"
                     containerClassName="flex-1 mb-0"
                     inputClassName="max-w-[150px]"
+                    disabled={!isCustomMode}
                   />
-                  <Button variant="primary" size="sm" onClick={handleSaveCR}>
+                  <Button variant="primary" size="sm" onClick={handleSaveCR} disabled={!isCustomMode}>
                     {t('action.save')}
                   </Button>
                 </div>
@@ -219,19 +258,16 @@ export default function Settings() {
           </Card>
         </div>
 
-        {/* ---- PDF Export ---- */}
         <div className="space-y-3">
           <h2 className="section-title">{t('reports.exportPDF')}</h2>
           <ExportPDF messId={activeMessId} activeMess={activeMess} />
         </div>
 
-        {/* ---- Data Management ---- */}
         <div className="space-y-3">
           <h2 className="section-title">{t('settings.dataManagement')}</h2>
           <BackupRestore />
         </div>
 
-        {/* ---- About ---- */}
         <div className="space-y-3">
           <h2 className="section-title">{t('settings.about')}</h2>
           <Card hover={false}>
@@ -247,7 +283,6 @@ export default function Settings() {
           </Card>
         </div>
 
-        {/* ---- Danger Zone ---- */}
         {activeMess && (
           <div className="space-y-3">
             <h2 className="section-title text-red-500 dark:text-red-400">{t('settings.dangerZone')}</h2>
@@ -279,7 +314,6 @@ export default function Settings() {
         )}
       </div>
 
-      {/* Delete confirmation dialog */}
       <ConfirmDialog
         isOpen={deleteConfirmOpen}
         onClose={() => { setDeleteConfirmOpen(false); setDeleteConfirmText(''); }}
