@@ -106,9 +106,11 @@ export default function Sidebar({ isOpen, onClose }) {
         {/* ---- App Brand ---- */}
         <div className="flex items-center justify-between px-5 h-16 border-b border-slate-100 dark:border-slate-700 flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-baltic flex items-center justify-center">
-              <span className="text-white text-xs font-bold">MB</span>
-            </div>
+             <img
+              src="/icons/icon-512x512.png"
+              alt="MB"
+              className="w-8 h-8 rounded-lg object-cover"
+            />
             <div>
               <h1 className="text-sm font-bold text-slate-800 dark:text-white leading-tight">
                 {t('app.shortName')}
