@@ -5,7 +5,6 @@ import { useSettings } from '../hooks/useSettings';
 import { useLanguageContext } from '../context/LanguageContext';
 import ExportPDF from '../components/settings/ExportPDF';
 import Card from '../components/ui/Card';
-import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import EmptyState from '../components/ui/EmptyState';
 import { formatCurrency, formatMonthKey, toBengaliNum, getMonthKey } from '../utils/formatters';
@@ -39,6 +38,14 @@ const FileTextIcon = (
   </svg>
 );
 
+const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+
+function toBengaliCurrency(amount) {
+  const formatted = formatCurrency(amount);
+  if (typeof amount !== 'number' || isNaN(amount)) return formatted;
+  return formatted.replace(/[0-9]/g, function(d) { return bengaliDigits[parseInt(d)]; });
+}
+
 export default function Reports() {
   const { activeMess, activeMessId } = useMess();
   const { t, isBn } = useLanguageContext();
@@ -58,7 +65,8 @@ export default function Reports() {
   const isCurrentMonth =
     year === new Date().getFullYear() && month === new Date().getMonth() + 1;
 
-  // ---- Load report data ----
+  const fmtCur = isBn ? toBengaliCurrency : formatCurrency;
+
   const loadReport = useCallback(async () => {
     if (!activeMessId) {
       setSummary(null);
@@ -90,7 +98,6 @@ export default function Reports() {
     loadReport();
   }, [loadReport]);
 
-  // ---- Month navigation ----
   const goToPrevMonth = useCallback(() => {
     setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   }, []);
@@ -103,20 +110,17 @@ export default function Reports() {
     setCurrentDate(new Date());
   }, []);
 
-  // ---- Category label helper ----
   const getCatLabel = useCallback((catValue) => {
     const catDef = EXPENSE_CATEGORIES.find((c) => c.value === catValue);
     return catDef ? (isBn ? catDef.labelBn : catDef.labelEn) : catValue;
   }, [isBn]);
 
-  // ---- Expense total for percentage calc ----
   const totalExpAmount = useMemo(() => {
     return expenseBreakdown.reduce((sum, e) => sum + e.total, 0);
   }, [expenseBreakdown]);
 
   return (
     <div className="page-container">
-      {/* Header */}
       <div className="page-header">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
@@ -150,14 +154,12 @@ export default function Reports() {
         </div>
       </div>
 
-      {/* Loading */}
       {loading && (
         <div className="py-12">
           <LoadingSpinner size="lg" />
         </div>
       )}
 
-      {/* No data */}
       {!loading && !summary && (
         <EmptyState
           icon={FileTextIcon}
@@ -166,14 +168,12 @@ export default function Reports() {
         />
       )}
 
-      {/* Report content */}
       {!loading && summary && (
         <div className="space-y-6 fade-in">
-          {/* ---- Summary cards ---- */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Card hover={false} className="text-center py-3">
               <p className="text-[10px] text-slate-400 uppercase tracking-wide">{t('reports.totalExpenseHead')}</p>
-              <p className="text-lg font-bold text-slate-800 dark:text-white mt-0.5">{formatCurrency(summary.totalAllExpenses)}</p>
+              <p className="text-lg font-bold text-slate-800 dark:text-white mt-0.5">{fmtCur(summary.totalAllExpenses)}</p>
             </Card>
             <Card hover={false} className="text-center py-3">
               <p className="text-[10px] text-slate-400 uppercase tracking-wide">{t('reports.totalMealsHead')}</p>
@@ -181,17 +181,16 @@ export default function Reports() {
             </Card>
             <Card hover={false} className="text-center py-3">
               <p className="text-[10px] text-slate-400 uppercase tracking-wide">{t('reports.totalCollectedHead')}</p>
-              <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{formatCurrency(summary.totalCollected)}</p>
+              <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{fmtCur(summary.totalCollected)}</p>
             </Card>
             <Card hover={false} className="text-center py-3">
               <p className="text-[10px] text-slate-400 uppercase tracking-wide">{t('reports.totalDueHead')}</p>
               <p className={`text-lg font-bold mt-0.5 ${summary.totalBalance < -0.5 ? 'text-red-500' : 'text-slate-500'}`}>
-                {formatCurrency(Math.abs(summary.totalBalance))}
+                {fmtCur(Math.abs(summary.totalBalance))}
               </p>
             </Card>
           </div>
 
-          {/* ---- Member-wise breakdown ---- */}
           <Card hover={false}>
             <h2 className="section-title">{t('reports.memberWiseBreakdown')}</h2>
             <div className="overflow-x-auto custom-scrollbar -mx-5 px-5">
@@ -213,13 +212,13 @@ export default function Reports() {
                     <tr key={m.memberId}>
                       <td className="font-medium">{m.memberName}</td>
                       <td className="text-center">{isBn ? toBengaliNum(m.totalMeals) : m.totalMeals}</td>
-                      <td className="text-right">{formatCurrency(m.mealCost)}</td>
-                      <td className="text-right">{formatCurrency(m.rent)}</td>
-                      <td className="text-right">{formatCurrency(m.sharedExpense + m.serviceCharge)}</td>
-                      <td className="text-right font-semibold">{formatCurrency(m.totalDue)}</td>
-                      <td className="text-right text-emerald-600 dark:text-emerald-400">{formatCurrency(m.totalPaid)}</td>
+                      <td className="text-right">{fmtCur(m.mealCost)}</td>
+                      <td className="text-right">{fmtCur(m.rent)}</td>
+                      <td className="text-right">{fmtCur(m.sharedExpense + m.serviceCharge)}</td>
+                      <td className="text-right font-semibold">{fmtCur(m.totalDue)}</td>
+                      <td className="text-right text-emerald-600 dark:text-emerald-400">{fmtCur(m.totalPaid)}</td>
                       <td className={`text-right font-bold ${m.balance < -0.5 ? 'text-red-500' : m.balance > 0.5 ? 'text-emerald-600' : 'text-slate-400'}`}>
-                        {formatCurrency(Math.abs(m.balance))}
+                        {fmtCur(Math.abs(m.balance))}
                       </td>
                     </tr>
                   ))}
@@ -228,13 +227,13 @@ export default function Reports() {
                   <tr className="border-t-2 border-slate-200 dark:border-slate-600 font-bold">
                     <td>{t('pdf.grandTotal')}</td>
                     <td className="text-center">{isBn ? toBengaliNum(summary.totalMeals) : summary.totalMeals}</td>
-                    <td className="text-right">{formatCurrency(summary.memberBreakdown.reduce((s, m) => s + m.mealCost, 0))}</td>
-                    <td className="text-right">{formatCurrency(summary.totalRent)}</td>
-                    <td className="text-right">{formatCurrency(summary.totalSharedExpenses + summary.totalServiceCharge)}</td>
-                    <td className="text-right">{formatCurrency(summary.totalDue)}</td>
-                    <td className="text-right text-emerald-600 dark:text-emerald-400">{formatCurrency(summary.totalCollected)}</td>
+                    <td className="text-right">{fmtCur(summary.memberBreakdown.reduce((s, m) => s + m.mealCost, 0))}</td>
+                    <td className="text-right">{fmtCur(summary.totalRent)}</td>
+                    <td className="text-right">{fmtCur(summary.totalSharedExpenses + summary.totalServiceCharge)}</td>
+                    <td className="text-right">{fmtCur(summary.totalDue)}</td>
+                    <td className="text-right text-emerald-600 dark:text-emerald-400">{fmtCur(summary.totalCollected)}</td>
                     <td className={`text-right ${summary.totalBalance < -0.5 ? 'text-red-500' : 'text-emerald-600'}`}>
-                      {formatCurrency(Math.abs(summary.totalBalance))}
+                      {fmtCur(Math.abs(summary.totalBalance))}
                     </td>
                   </tr>
                 </tfoot>
@@ -242,7 +241,6 @@ export default function Reports() {
             </div>
           </Card>
 
-          {/* ---- Expense breakdown ---- */}
           <Card hover={false}>
             <h2 className="section-title">{t('reports.expenseSummary')}</h2>
             <div className="space-y-3">
@@ -253,8 +251,8 @@ export default function Reports() {
                     <div className="flex items-center justify-between text-sm mb-1">
                       <span className="text-slate-600 dark:text-slate-300">{getCatLabel(cat.category)}</span>
                       <div className="flex items-center gap-3">
-                        <span className="text-xs text-slate-400">{percentage}%</span>
-                        <span className="font-semibold text-slate-800 dark:text-white w-24 text-right">{formatCurrency(cat.total)}</span>
+                        <span className="text-xs text-slate-400">{isBn ? toBengaliNum(percentage) : percentage}%</span>
+                        <span className="font-semibold text-slate-800 dark:text-white w-24 text-right">{fmtCur(cat.total)}</span>
                       </div>
                     </div>
                     <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -272,7 +270,6 @@ export default function Reports() {
             </div>
           </Card>
 
-          {/* ---- PDF Export ---- */}
           <ExportPDF messId={activeMessId} activeMess={activeMess} />
         </div>
       )}
