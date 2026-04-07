@@ -161,6 +161,8 @@ const bn = {
     mealRate: 'খাবারের রেট',
     mealRateCalculated: 'গণনাকৃত রেট',
     mealRateCustom: 'কাস্টম রেট',
+    mealCostCustom: 'কাস্টম রেট',
+    mealCost: 'খাবারের দাম',
     bazarDividedByMeals: 'বাজার খরচ ÷ মোট খাবার',
     noMeals: 'কোনো খাবার রেকর্ড নেই',
     noMealsDesc: 'প্রতিদিনের খাবার যোগ করা শুরু করুন।',
