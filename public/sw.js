@@ -3,9 +3,9 @@ const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icons/favicon.svg',
-  '/icons/icon-192x192.svg',
-  '/icons/icon-512x512.svg',
+  '/icons/favicon.png',
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png',
 ];
 
 self.addEventListener('install', (event) => {
@@ -34,15 +34,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests
   if (request.method !== 'GET') return;
-
-  // Skip chrome-extension and other non-http(s) protocols
   if (!url.protocol.startsWith('http')) return;
 
-  // Cache First for static assets (js, css, images, fonts)
   if (
-    url.pathname.match(/\.(js|css|svg|png|jpg|jpeg|gif|ico|woff|woff2|ttf|eot)$/) ||
+    url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|ico|woff|woff2|ttf|eot)$/) ||
     url.pathname.startsWith('/icons/')
   ) {
     event.respondWith(
@@ -62,7 +58,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network First for HTML pages (to get latest app shell)
   if (request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
       fetch(request)
@@ -83,7 +78,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Stale While Revalidate for API-like requests (IndexedDB doesn't use network, but just in case)
   event.respondWith(
     caches.match(request).then((cached) => {
       const fetchPromise = fetch(request).then((response) => {
