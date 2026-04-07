@@ -178,8 +178,6 @@ export default function Meals() {
       </div>
 
       <div className="fade-in" key={viewMode}>
-
-      <div className="fade-in" key={viewMode}>
         {viewMode === 'table' ? (
           <MealTable
             year={year}
@@ -198,8 +196,6 @@ export default function Meals() {
           />
         )}
       </div>
-
-
 
       <Modal
         isOpen={addOpen}
