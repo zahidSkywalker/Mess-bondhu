@@ -3,7 +3,6 @@ import db from '../db';
 import { validateMealEntry } from '../utils/validators';
 import { useToastContext } from '../context/ToastContext';
 import { useLanguageContext } from '../context/LanguageContext';
-import { getDatesInMonth, toDateStr } from '../utils/formatters';
 
 const useMeals = (messId) => {
   const [meals, setMeals] = useState([]);
@@ -11,12 +10,10 @@ const useMeals = (messId) => {
   const { success, error: showError } = useToastContext();
   const { t } = useLanguageContext();
 
-  // ---- Detect current language from a known translation key ----
   const getLang = useCallback(() => {
-    return t('app.name') === 'মেস বন্ধু প্রো' ? 'bn' : 'en';
+    return t('app.name') === 'মেস বন্ধু' ? 'bn' : 'en';
   }, [t]);
 
-  // ---- Fetch meals for a specific month ----
   const fetchMeals = useCallback(async (year, month) => {
     if (!messId) {
       setMeals([]);
@@ -44,7 +41,6 @@ const useMeals = (messId) => {
     }
   }, [messId, showError, t]);
 
-  // ---- Fetch meals for a single date ----
   const fetchMealsByDate = useCallback(async (dateStr) => {
     if (!messId || !dateStr) return [];
     try {
@@ -59,7 +55,6 @@ const useMeals = (messId) => {
     }
   }, [messId]);
 
-  // ---- Add a single meal entry ----
   const addMeal = useCallback(async (data) => {
     const validation = validateMealEntry(data);
     if (!validation.valid) {
@@ -93,7 +88,6 @@ const useMeals = (messId) => {
     }
   }, [messId, success, showError, t, getLang]);
 
-  // ---- Update a meal entry ----
   const updateMeal = useCallback(async (mealId, data) => {
     const validation = validateMealEntry({ ...data, memberId: data.memberId });
     if (!validation.valid) {
@@ -121,7 +115,6 @@ const useMeals = (messId) => {
     }
   }, [success, showError, t, getLang]);
 
-  // ---- Delete a meal entry ----
   const deleteMeal = useCallback(async (mealId) => {
     try {
       await db.meals.delete(mealId);
@@ -135,7 +128,6 @@ const useMeals = (messId) => {
     }
   }, [success, showError, t]);
 
-  // ---- Bulk add: mark all active members as present (1 meal each) ----
   const bulkAddMeals = useCallback(async (dateStr, activeMemberIds, mealCount = 1) => {
     if (!messId || !dateStr || !activeMemberIds.length) {
       return { success: false, added: 0 };
@@ -169,32 +161,78 @@ const useMeals = (messId) => {
     }
   }, [messId, success, showError, t]);
 
-  // ---- Get meal count total for a specific date ----
   const getDayTotal = useCallback((dateStr) => {
     return meals
       .filter((m) => m.date === dateStr)
       .reduce((sum, m) => sum + (Number(m.mealCount) || 0), 0);
   }, [meals]);
 
-  // ---- Get meal count for a specific member in current loaded meals ----
   const getMemberMealTotal = useCallback((memberId) => {
     return meals
       .filter((m) => m.memberId === memberId)
       .reduce((sum, m) => sum + (Number(m.mealCount) || 0), 0);
   }, [meals]);
 
-  // ---- Get meals grouped by date as a Map ----
   const getMealsByDateMap = useCallback(() => {
     const map = {};
     for (const meal of meals) {
       if (!map[meal.date]) map[meal.date] = {};
-      map[meal.date][meal.memberId] = Number(meal.mealCount) || 0;
+      map[meal.date][meal.memberId] = Number(mealCount) || 0;
     }
     return map;
   }, [meals]);
 
-  // ---- Get total meals across all loaded meals ----
   const totalMealCount = meals.reduce((sum, m) => sum + (Number(m.mealCount) || 0), 0);
+
+  /* ------------------------------------------------------------------
+   * quickSetMealCount — The core of the new UX.
+   *
+   * Sets a single member's meal count for a specific date.
+   * If count is 0, deletes the row entirely (clean DB, no zero-rows).
+   * If count > 0, either updates the existing row or inserts a new one.
+   *
+   * This powers the +/- buttons on the member cards.
+   * ------------------------------------------------------------------ */
+  const quickSetMealCount = useCallback(async (memberId, dateStr, count) => {
+    if (!messId || !dateStr) return { success: false };
+
+    try {
+      if (count === 0) {
+        // Delete all meal rows for this member on this date
+        await db.meals
+          .where({ messId, memberId, date: dateStr })
+          .delete();
+      } else {
+        // Find existing meal row for this member on this date
+        const existing = await db.meals
+          .where({ messId, memberId, date: dateStr })
+          .first();
+
+        if (existing) {
+          await db.meals.update(existing.id, { mealCount: count });
+        } else {
+          await db.meals.add({
+            messId,
+            memberId,
+            date: dateStr,
+            mealCount: count,
+            createdAt: new Date().toISOString(),
+          });
+        }
+      }
+
+      // Re-fetch to keep state in sync
+      const mm = String(new Date(dateStr + 'T00:00:00').getMonth() + 1;
+      const yyyy = new Date(dateStr + 'T00:00:00').getFullYear();
+      await fetchMeals(yyyy, mm);
+
+      return { success: true };
+    } catch (err) {
+      console.error('quickSetMealCount failed:', err);
+      showError(t('toast.error'));
+      return { success: false };
+    }
+  }, [messId, fetchMeals, showError, t]);
 
   return {
     meals,
@@ -209,6 +247,7 @@ const useMeals = (messId) => {
     getDayTotal,
     getMemberMealTotal,
     getMealsByDateMap,
+    quickSetMealCount,
   };
 }
 export { useMeals };
