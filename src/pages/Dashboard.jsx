@@ -45,6 +45,8 @@ export default function Dashboard() {
     goToPrevMonth,
     goToNextMonth,
     goToCurrentMonth,
+    mealRateMode,
+    customMealRate,
   } = useDashboard(activeMessId);
 
   const monthKey = `${year}-${String(month).padStart(2, '0')}`;
@@ -111,7 +113,12 @@ export default function Dashboard() {
       {summary && (
         <div className="space-y-6 fade-in">
           {/* Stats cards grid */}
-          <MonthlyOverview summary={summary} monthKey={monthKey} />
+          <MonthlyOverview
+            summary={summary}
+            monthKey={monthKey}
+            mealRateMode={mealRateMode}
+            customMealRate={customMealRate}
+          />
 
           {/* Two column layout on desktop: Due list + P&L */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
