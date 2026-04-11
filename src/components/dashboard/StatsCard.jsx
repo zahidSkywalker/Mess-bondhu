@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import Card from '../ui/Card';
 
 /**
  * StatsCard — Single metric display card for the dashboard.
+ * Supports 3D flip to show detailed breakdown on tap.
  *
  * Props:
  *   label: string — metric name
@@ -9,8 +11,12 @@ import Card from '../ui/Card';
  *   icon: JSX — icon element
  *   color: 'baltic' | 'teal' | 'emerald' | 'amber' | 'red' | 'slate'
  *   subtitle: string — optional secondary text
+ *   flippable: boolean — enable 3D flip on tap
+ *   backContent: JSX — content shown on the back face
  */
-export default function StatsCard({ label, value, icon, color = 'baltic', subtitle }) {
+export default function StatsCard({ label, value, icon, color = 'baltic', subtitle, flippable = false, backContent = null }) {
+  const [flipped, setFlipped] = useState(false);
+
   const colorMap = {
     baltic: {
       iconBg: 'bg-baltic/10',
@@ -46,31 +52,71 @@ export default function StatsCard({ label, value, icon, color = 'baltic', subtit
 
   const colors = colorMap[color] || colorMap.baltic;
 
-  return (
-    <Card hover={false} padding={true}>
-      <div className="flex items-start gap-3">
-        {/* Icon */}
-        {icon && (
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${colors.iconBg}`}>
-            <span className={colors.iconText}>{icon}</span>
-          </div>
-        )}
+  const handleFlip = () => {
+    if (flippable) setFlipped((prev) => !prev);
+  };
 
-        {/* Value + Label */}
-        <div className="min-w-0 flex-1">
-          <p className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wide font-medium truncate">
-            {label}
+  const frontInner = (
+    <div className="flex items-start gap-3">
+      {icon && (
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${colors.iconBg}`}>
+          <span className={colors.iconText}>{icon}</span>
+        </div>
+      )}
+
+      <div className="min-w-0 flex-1">
+        <p className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wide font-medium truncate">
+          {label}
+        </p>
+        <p className={`text-xl font-bold mt-0.5 leading-tight ${colors.valueText}`}>
+          {value}
+        </p>
+        {subtitle && (
+          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 truncate">
+            {subtitle}
           </p>
-          <p className={`text-xl font-bold mt-0.5 leading-tight ${colors.valueText}`}>
-            {value}
-          </p>
-          {subtitle && (
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 truncate">
-              {subtitle}
+        )}
+      </div>
+    </div>
+  );
+
+  // ---- Non-flippable: render exactly as before ----
+  if (!flippable) {
+    return (
+      <Card hover={false} padding={true}>
+        {frontInner}
+      </Card>
+    );
+  }
+
+  // ---- Flippable: wrap in 3D flip container ----
+  return (
+    <div className="flip-card" onClick={handleFlip}>
+      <div className={`flip-card-inner ${flipped ? 'flipped' : ''}`}>
+        {/* Front face */}
+        <div className="flip-card-front">
+          <Card hover={false} padding={true}>
+            {frontInner}
+            <p className="text-[9px] text-slate-300 dark:text-slate-600 mt-2 text-center select-none">
+              ↑ {typeof window !== 'undefined' && document.documentElement.lang === 'bn' ? 'ট্যাপ করুন' : 'Tap for details'}
             </p>
-          )}
+          </Card>
+        </div>
+
+        {/* Back face */}
+        <div className="flip-card-back">
+          <Card hover={false} padding={true} className="h-full flex flex-col">
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
+              {backContent || (
+                <p className="text-xs text-slate-400">No details</p>
+              )}
+            </div>
+            <p className="text-[9px] text-slate-300 dark:text-slate-600 mt-2 text-center select-none">
+              ↑ {typeof window !== 'undefined' && document.documentElement.lang === 'bn' ? 'ফিরে যান' : 'Tap to go back'}
+            </p>
+          </Card>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
