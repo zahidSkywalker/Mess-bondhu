@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import StatsCard from './StatsCard';
 import { useLanguageContext } from '../../context/LanguageContext';
 import { formatCurrency, toBengaliNum, formatMonthKey } from '../../utils/formatters';
@@ -54,6 +55,7 @@ const MealRateIcon = (
 
 /**
  * MonthlyOverview — Grid of stat cards for the dashboard.
+ * Each card is flippable to show a detailed breakdown on tap.
  *
  * Props:
  *   summary: object from calculateMonthlySummary
@@ -76,6 +78,152 @@ export default function MonthlyOverview({ summary, monthKey }) {
 
   const monthLabel = formatMonthKey(monthKey, isBn ? 'bn' : 'en');
 
+  // ---- Build back-face content for each card ----
+
+  // Sorted copies of memberBreakdown for back faces
+  const byMeals = useMemo(() =>
+    [...summary.memberBreakdown].sort((a, b) => b.totalMeals - a.totalMeals).slice(0, 5),
+    [summary.memberBreakdown]
+  );
+  const byPaid = useMemo(() =>
+    [...summary.memberBreakdown].sort((a, b) => b.totalPaid - a.totalPaid).slice(0, 5),
+    [summary.memberBreakdown]
+  );
+  const byDue = useMemo(() =>
+    [...summary.memberBreakdown].filter((m) => m.balance < -0.5).sort((a, b) => a.balance - b.balance).slice(0, 5),
+    [summary.memberBreakdown]
+  );
+
+  const expenseBack = (
+    <div className="space-y-1.5">
+      <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        {isBn ? 'বিবরণ' : 'Breakdown'}
+      </p>
+      <div className="flex justify-between text-xs">
+        <span className="text-slate-500 dark:text-slate-400">{t('expenses.bazar')}</span>
+        <span className="font-medium text-slate-700 dark:text-slate-200">{formatCurrency(summary.totalBazarCost)}</span>
+      </div>
+      <div className="flex justify-between text-xs">
+        <span className="text-slate-500 dark:text-slate-400">{t('dashboard.otherExpense')}</span>
+        <span className="font-medium text-slate-700 dark:text-slate-200">{formatCurrency(summary.totalNonBazarCost)}</span>
+      </div>
+      <div className="flex justify-between text-xs">
+        <span className="text-slate-500 dark:text-slate-400">{t('members.rentPerMonth')}</span>
+        <span className="font-medium text-slate-700 dark:text-slate-200">{formatCurrency(summary.totalRent)}</span>
+      </div>
+      <div className="border-t border-slate-200 dark:border-slate-600 pt-1.5 flex justify-between text-xs font-bold">
+        <span className="text-slate-700 dark:text-slate-200">{t('dashboard.totalExpense')}</span>
+        <span className="text-slate-800 dark:text-white">{formatCurrency(summary.totalAllExpenses)}</span>
+      </div>
+    </div>
+  );
+
+  const mealsBack = (
+    <div className="space-y-1.5">
+      <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        {isBn ? 'সদস্যভিত্তিক' : 'By Member'}
+      </p>
+      {byMeals.length === 0 ? (
+        <p className="text-xs text-slate-400">{t('members.noMembers')}</p>
+      ) : (
+        byMeals.map((m) => (
+          <div key={m.memberId} className="flex justify-between text-xs">
+            <span className="text-slate-500 dark:text-slate-400 truncate max-w-[65%]">{m.memberName}</span>
+            <span className="font-medium text-slate-700 dark:text-slate-200">{isBn ? toBengaliNum(m.totalMeals) : m.totalMeals}</span>
+          </div>
+        ))
+      )}
+      <div className="border-t border-slate-200 dark:border-slate-600 pt-1 flex justify-between text-xs font-bold">
+        <span className="text-slate-700 dark:text-slate-200">{t('pdf.grandTotal')}</span>
+        <span className="text-slate-800 dark:text-white">{isBn ? toBengaliNum(summary.totalMeals) : summary.totalMeals}</span>
+      </div>
+    </div>
+  );
+
+  const collectedBack = (
+    <div className="space-y-1.5">
+      <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        {isBn ? 'সদস্যভিত্তিক' : 'By Member'}
+      </p>
+      {byPaid.length === 0 ? (
+        <p className="text-xs text-slate-400">{t('payments.noPayments')}</p>
+      ) : (
+        byPaid.map((m) => (
+          <div key={m.memberId} className="flex justify-between text-xs">
+            <span className="text-slate-500 dark:text-slate-400 truncate max-w-[65%]">{m.memberName}</span>
+            <span className="font-medium text-emerald-600 dark:text-emerald-400">{formatCurrency(m.totalPaid)}</span>
+          </div>
+        ))
+      )}
+      <div className="border-t border-slate-200 dark:border-slate-600 pt-1 flex justify-between text-xs font-bold">
+        <span className="text-slate-700 dark:text-slate-200">{t('pdf.grandTotal')}</span>
+        <span className="text-emerald-600 dark:text-emerald-400">{formatCurrency(summary.totalCollected)}</span>
+      </div>
+    </div>
+  );
+
+  const dueBack = (
+    <div className="space-y-1.5">
+      <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        {isBn ? 'বাকিদারদের তালিকা' : 'Due Members'}
+      </p>
+      {byDue.length === 0 ? (
+        <p className="text-xs text-emerald-500">{t('dashboard.allClear')}</p>
+      ) : (
+        byDue.map((m) => (
+          <div key={m.memberId} className="flex justify-between text-xs">
+            <span className="text-slate-500 dark:text-slate-400 truncate max-w-[65%]">{m.memberName}</span>
+            <span className="font-medium text-red-500 dark:text-red-400">{formatCurrency(Math.abs(m.balance))}</span>
+          </div>
+        ))
+      )}
+    </div>
+  );
+
+  const membersBack = (
+    <div className="space-y-1.5">
+      <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        {isBn ? 'সক্রিয় সদস্য' : 'Active Members'}
+      </p>
+      {summary.memberBreakdown.length === 0 ? (
+        <p className="text-xs text-slate-400">{t('members.noMembers')}</p>
+      ) : (
+        summary.memberBreakdown.map((m) => (
+          <div key={m.memberId} className="flex justify-between text-xs">
+            <span className="text-slate-500 dark:text-slate-400 truncate max-w-[65%]">{m.memberName}</span>
+            <span className="font-medium text-slate-700 dark:text-slate-200">
+              {isBn ? toBengaliNum(m.totalMeals) : m.totalMeals} {isBn ? 'খাবার' : 'meals'}
+            </span>
+          </div>
+        ))
+      )}
+    </div>
+  );
+
+  const mealRateBack = (
+    <div className="space-y-1.5">
+      <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        {isBn ? 'হিসাব' : 'Calculation'}
+      </p>
+      <div className="flex justify-between text-xs">
+        <span className="text-slate-500 dark:text-slate-400">{t('expenses.bazar')}</span>
+        <span className="font-medium text-slate-700 dark:text-slate-200">{formatCurrency(summary.totalBazarCost)}</span>
+      </div>
+      <div className="flex justify-between text-xs">
+        <span className="text-slate-500 dark:text-slate-400">{t('dashboard.totalMeals')}</span>
+        <span className="font-medium text-slate-700 dark:text-slate-200">{isBn ? toBengaliNum(summary.totalMeals) : summary.totalMeals}</span>
+      </div>
+      <div className="rounded-lg bg-slate-100 dark:bg-slate-700/50 px-2.5 py-2 mt-1">
+        <p className="text-[10px] text-slate-500 dark:text-slate-400 text-center">
+          {formatCurrency(summary.totalBazarCost)} ÷ {isBn ? toBengaliNum(summary.totalMeals) : summary.totalMeals}
+        </p>
+        <p className="text-sm font-bold text-center text-slate-800 dark:text-white mt-0.5">
+          = ৳{summary.mealRate}
+        </p>
+      </div>
+    </div>
+  );
+
   const cards = [
     {
       label: t('dashboard.totalExpense'),
@@ -83,6 +231,7 @@ export default function MonthlyOverview({ summary, monthKey }) {
       icon: TotalExpenseIcon,
       color: 'baltic',
       subtitle: `${isBn ? 'বাজার' : 'Bazar'}: ${formatCurrency(summary.totalBazarCost)}`,
+      backContent: expenseBack,
     },
     {
       label: t('dashboard.totalMeals'),
@@ -90,6 +239,7 @@ export default function MonthlyOverview({ summary, monthKey }) {
       icon: TotalMealsIcon,
       color: 'teal',
       subtitle: `${t('dashboard.mealRate')}: ৳${summary.mealRate}`,
+      backContent: mealsBack,
     },
     {
       label: t('dashboard.totalCollected'),
@@ -99,6 +249,7 @@ export default function MonthlyOverview({ summary, monthKey }) {
       subtitle: summary.totalCollected >= summary.totalAllExpenses
         ? (isBn ? 'পর্যাপ্ত' : 'Sufficient')
         : (isBn ? 'অপর্যাপ্ত' : 'Insufficient'),
+      backContent: collectedBack,
     },
     {
       label: t('dashboard.totalDue'),
@@ -108,6 +259,7 @@ export default function MonthlyOverview({ summary, monthKey }) {
       subtitle: summary.totalBalance < -0.5
         ? (isBn ? 'বাকি আছে' : 'Outstanding')
         : (isBn ? 'কোনো বাকি নেই' : 'All clear'),
+      backContent: dueBack,
     },
     {
       label: t('dashboard.activeMembers'),
@@ -115,6 +267,7 @@ export default function MonthlyOverview({ summary, monthKey }) {
       icon: MembersIcon,
       color: 'slate',
       subtitle: `${isBn ? 'মোট ভাড়া' : 'Total rent'}: ${formatCurrency(summary.totalRent)}`,
+      backContent: membersBack,
     },
     {
       label: t('dashboard.mealRate'),
@@ -122,6 +275,7 @@ export default function MonthlyOverview({ summary, monthKey }) {
       icon: MealRateIcon,
       color: 'amber',
       subtitle: t('meals.bazarDividedByMeals'),
+      backContent: mealRateBack,
     },
   ];
 
@@ -136,6 +290,8 @@ export default function MonthlyOverview({ summary, monthKey }) {
             icon={card.icon}
             color={card.color}
             subtitle={card.subtitle}
+            flippable={true}
+            backContent={card.backContent}
           />
         ))}
       </div>
